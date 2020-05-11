@@ -34,16 +34,18 @@ rule blast_search:
            reference=os.path.join(OUT_DIR, "blastdb/{reference_genome}.nsq")
     output: os.path.join(OUT_DIR, "blast-out/{query_genome}_vs_{reference_genome}.blast.tsv")
     params: 
-        db_prefix = lambda wildcards: os.path.join(OUT_DIR, f"blastdb/{wildcards.reference_genome}"),
-        eval_threshold = config.get("blast_eval", "1.0E-15")
-    threads: config.get("blast_threads", 4)
+        db_prefix = lambda wildcards: os.path.join(OUT_DIR, f"blastdb/{wildcards.reference_genome}")
+    threads: config.get("blast_threads", 1)
     shell:
-        "blastn -query {input.query} -db {params.db_prefix} -out {output} -num_threads {threads} -outfmt '6 qseqid qstart qend qlen sseqid sstart send length gaps pident nident evalue' -evalue {params.eval_threshold} -dust no -xdrop_gap 150 -task blastn"
+        "blastn -query {input.query} -db {params.db_prefix} -out {output} -num_threads {threads} -outfmt '6 qseqid qstart qend qlen sseqid sstart send length gaps pident nident evalue' -dust no -xdrop_gap 150 -task blastn"
 
 
 rule process_blast:
     input: os.path.join(OUT_DIR, "blast-out/{query_genome}_vs_{reference_genome}.blast.tsv")
     output: os.path.join(OUT_DIR, "blast-processed/{query_genome}_vs_{reference_genome}.blast.tsv")
+    params: eval_threshold = config.get("eval_filter", 1.0E-15),
+            coverage_threshold = config.get("coverage_filter", 0.7),
+            identity_threshold = config.get("identity_filter", 0.3)
     script: "scripts/process_blast_results.py"
 
 
