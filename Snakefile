@@ -38,6 +38,7 @@ rule blast_search:
     threads: config.get("blast_threads", 1)
     shell:
         "blastn -query {input.query} -db {params.db_prefix} -out {output} -num_threads {threads} -outfmt '6 qseqid qstart qend qlen sseqid sstart send length gaps pident nident evalue' -dust no -xdrop_gap 150 -task blastn"
+        # "blastn -query {input.query} -db {params.db_prefix} -out {output} -num_threads {threads} -outfmt '6 qseqid qstart qend qlen sseqid sstart send length gaps pident nident evalue' -dust no -penalty -1 -reward 1 -task blastn"
 
 
 rule process_blast:
