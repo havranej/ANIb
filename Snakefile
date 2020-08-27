@@ -1,12 +1,38 @@
 
+import itertools
 import os
 
-IN_DIR = config["input_dir"]
 OUT_DIR = config["output_dir"]
 CHUNK_SIZE = config.get("chunk_size", 1020)
+IN_DIR = config["input_dir"]
 
-genomes, = glob_wildcards(os.path.join(IN_DIR, "{genome}.fna"))
-print(genomes)
+try:
+    IN_LIST = config["input_list"]
+    query_genomes = []
+    reference_genomes = []    
+
+    EXPAND_FUNCTION = zip
+
+    with open(IN_LIST) as f:
+        for line in f:
+            genome_pair = line.split(",")
+            query_genomes.append(genome_pair[0].strip())
+            reference_genomes.append(genome_pair[1].strip())
+        
+    print("Running in paired mode")
+    print("Queries: ", query_genomes)
+    print("References: ", reference_genomes)
+
+except KeyError:
+    
+    EXPAND_FUNCTION = itertools.product
+
+    genomes, = glob_wildcards(os.path.join(IN_DIR, "{genome}.fna"))
+    query_genomes = reference_genomes = genomes
+
+    print("Running in all vs. all mode.\nGenomes:")
+    print(genomes)
+
 
 rule target:
     input: os.path.join(OUT_DIR, "anib.csv")
@@ -51,7 +77,7 @@ rule process_blast:
 
 
 rule calculate_ANI:
-    input: expand(os.path.join(OUT_DIR, "blast-processed/{query_genome}_vs_{reference_genome}.blast.tsv"), query_genome = genomes, reference_genome = genomes)
+    input: expand(os.path.join(OUT_DIR, "blast-processed/{query_genome}_vs_{reference_genome}.blast.tsv"), EXPAND_FUNCTION, query_genome = query_genomes, reference_genome = reference_genomes)
     output: os.path.join(OUT_DIR, "anib.csv")
     script: "scripts/calculate_ani.py"
 
