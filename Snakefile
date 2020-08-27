@@ -15,6 +15,11 @@ try:
 
     with open(IN_LIST) as f:
         for line in f:
+            line = line.strip()
+            
+            if not line or line[0] == "#":
+                continue
+            
             genome_pair = line.split(",")
             query_genomes.append(genome_pair[0].strip())
             reference_genomes.append(genome_pair[1].strip())
