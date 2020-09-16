@@ -2,9 +2,19 @@
 import itertools
 import os
 
+from helpers import format_blast_params
+
 OUT_DIR = config["output_dir"]
 CHUNK_SIZE = config.get("chunk_size", 1020)
 IN_DIR = config["input_dir"]
+
+BLAST_PARAMS = config.get("blast_params",
+    {
+    "dust": "no",
+    "xdrop_gap": "150",
+    }
+)
+FORMATTED_BLAST_PARAMS = format_blast_params(BLAST_PARAMS)
 
 try:
     IN_LIST = config["input_list"]
@@ -65,10 +75,11 @@ rule blast_search:
            reference=os.path.join(OUT_DIR, "blastdb/{reference_genome}.nsq")
     output: os.path.join(OUT_DIR, "blast-out/{query_genome}_vs_{reference_genome}.blast.tsv")
     params: 
-        db_prefix = lambda wildcards: os.path.join(OUT_DIR, f"blastdb/{wildcards.reference_genome}")
+        db_prefix = lambda wildcards: os.path.join(OUT_DIR, f"blastdb/{wildcards.reference_genome}"),
+        blast_params = FORMATTED_BLAST_PARAMS
     threads: config.get("blast_threads", 1)
     shell:
-        "blastn -query {input.query} -db {params.db_prefix} -out {output} -num_threads {threads} -outfmt '6 qseqid qstart qend qlen sseqid sstart send length gaps pident nident evalue' -dust no -xdrop_gap 150 -task blastn"
+        "blastn -query {input.query} -db {params.db_prefix} -out {output} -num_threads {threads} -outfmt '6 qseqid qstart qend qlen sseqid sstart send length gaps pident nident evalue' -task blastn {params.blast_params}"
         # "blastn -query {input.query} -db {params.db_prefix} -out {output} -num_threads {threads} -outfmt '6 qseqid qstart qend qlen sseqid sstart send length gaps pident nident evalue' -dust no -penalty -1 -reward 1 -task blastn"
 
 
