@@ -18,4 +18,4 @@ blast_best["query_percent_identity"] = blast_best.nident / blast_best.qlen
 # Filtering as in Goris et al. 2007
 blast_best_filtered = blast_best[(blast_best.query_coverage > COVERAGE_THR) & (blast_best.query_percent_identity > IDENTITY_THR) & (blast_best.evalue < EVAL_THR)]
 
-blast_best_filtered.to_csv(OUTPUT_PATH)
+blast_best_filtered.to_csv(OUTPUT_PATH, sep = "\t")

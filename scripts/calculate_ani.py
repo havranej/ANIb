@@ -7,7 +7,7 @@ OUTPUT_PATH = snakemake.output[0]
 results = []
 
 for input in INPUTS:
-    blast_results = pd.read_csv(input)
+    blast_results = pd.read_csv(input, sep = "\t")
     ani = blast_results.aln_percent_identity.mean()
     
     basename = os.path.basename(input)
