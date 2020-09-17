@@ -2,7 +2,7 @@
 import itertools
 import os
 
-from helpers import format_blast_params
+from helpers import format_blast_params, read_pair_list
 
 OUT_DIR = config["output_dir"]
 CHUNK_SIZE = config.get("chunk_size", 1020)
@@ -18,27 +18,15 @@ FORMATTED_BLAST_PARAMS = format_blast_params(BLAST_PARAMS)
 
 try:
     IN_LIST = config["input_list"]
-    query_genomes = []
-    reference_genomes = []    
-
     EXPAND_FUNCTION = zip
 
-    with open(IN_LIST) as f:
-        for line in f:
-            line = line.strip()
-            
-            if not line or line[0] == "#":
-                continue
-            
-            genome_pair = line.split(",")
-            query_genomes.append(genome_pair[0].strip())
-            reference_genomes.append(genome_pair[1].strip())
+    query_genomes, reference_genomes = read_pair_list(IN_LIST)
         
     print("Running in paired mode")
     print("Queries: ", query_genomes)
     print("References: ", reference_genomes)
 
-except KeyError:
+except KeyError:    # There is no input_list parameter in the config file
     
     EXPAND_FUNCTION = itertools.product
 
