@@ -70,6 +70,12 @@ rule split_query_genome:
     script: "scripts/split_fasta.py"
 
 
+rule get_query_lengths:
+    input: expand(os.path.join(IN_DIR, "{genome}.fna"), genome = query_genomes)
+    output: os.path.join(OUT_DIR, "query_lengths.csv")
+    script: "scripts/get_fasta_lengths.py"
+
+
 rule blast_search:
     input: query=os.path.join(OUT_DIR, "split/{query_genome}.fasta"),
            reference=os.path.join(OUT_DIR, "blastdb/{reference_genome}.nsq")
@@ -93,7 +99,9 @@ rule process_blast:
 
 
 rule calculate_ANI:
-    input: expand(os.path.join(OUT_DIR, "blast-processed/{query_genome}_vs_{reference_genome}.blast.tsv"), EXPAND_FUNCTION, query_genome = query_genomes, reference_genome = reference_genomes)
+    input: 
+        os.path.join(OUT_DIR, "query_lengths.csv"),
+        expand(os.path.join(OUT_DIR, "blast-processed/{query_genome}_vs_{reference_genome}.blast.tsv"), EXPAND_FUNCTION, query_genome = query_genomes, reference_genome = reference_genomes)
     output: os.path.join(OUT_DIR, "anib.csv")
     script: "scripts/calculate_ani.py"
 
