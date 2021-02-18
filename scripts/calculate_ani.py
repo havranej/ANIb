@@ -7,7 +7,7 @@ INPUTS = snakemake.input[1:]
 OUTPUT_PATH = snakemake.output[0]
 
 results = []
-query_lengths = pd.read_csv(QUERY_LENGTHS_PATH, index_col = 0)
+query_lengths = pd.read_csv(QUERY_LENGTHS_PATH, index_col = 0).drop_duplicates()
 
 for input_path in INPUTS:
     blast_results = pd.read_csv(input_path, sep = "\t", index_col = 0)
