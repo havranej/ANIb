@@ -7,6 +7,7 @@ from helpers import format_blast_params, read_pair_list
 OUT_DIR = config["output_dir"]
 CHUNK_SIZE = config.get("chunk_size", 1020)
 IN_DIR = config["input_dir"]
+INPUT_EXTENSION = config.get("input_extension", "fna")
 
 BLAST_PARAMS = config.get("blast_params",
     {
@@ -30,7 +31,7 @@ except KeyError:    # There is no input_list parameter in the config file
     
     EXPAND_FUNCTION = itertools.product
 
-    genomes, = glob_wildcards(os.path.join(IN_DIR, "{genome}.fna"))
+    genomes, = glob_wildcards(os.path.join(IN_DIR, "{genome}."+INPUT_EXTENSION))
     query_genomes = reference_genomes = genomes
 
     print("Running in all vs. all mode.\nGenomes:")
@@ -42,7 +43,7 @@ rule target:
 
 
 rule make_db:
-    input: os.path.join(IN_DIR, "{reference_genome}.fna")
+    input: os.path.join(IN_DIR, "{reference_genome}."+INPUT_EXTENSION)
     output: os.path.join(OUT_DIR, "blastdb/{reference_genome}.nsq")
     params: 
         db_prefix = os.path.join(OUT_DIR, "blastdb/{reference_genome}")
@@ -51,7 +52,7 @@ rule make_db:
 
 
 rule split_query_genome:
-    input: os.path.join(IN_DIR, "{query_genome}.fna")
+    input: os.path.join(IN_DIR, "{query_genome}."+INPUT_EXTENSION)
     output: os.path.join(OUT_DIR, "split/{query_genome}.fasta")
     params:
         chunk_size = CHUNK_SIZE
@@ -59,7 +60,7 @@ rule split_query_genome:
 
 
 rule get_query_lengths:
-    input: expand(os.path.join(IN_DIR, "{genome}.fna"), genome = query_genomes)
+    input: expand(os.path.join(IN_DIR, "{genome}."+INPUT_EXTENSION), genome = query_genomes)
     output: os.path.join(OUT_DIR, "query_lengths.csv")
     script: "scripts/get_fasta_lengths.py"
 
